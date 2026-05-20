@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eurika's Party Trays — Installment System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#e91e8c;--pink-light:#ff6ec7;--pink-pale:#fff0f8;--gold:#c9a84c;--gold-light:#f0d080;--gold-pale:#fffbf0;--white:#ffffff;--dark:#1a0a12;--gray:#6b5c65;--gray-light:#f5f0f3;--success:#2ecc71;--danger:#e74c3c;--warning:#f39c12;--shadow:0 8px 32px rgba(233,30,140,0.12);--shadow-gold:0 4px 20px rgba(201,168,76,0.25)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito',sans-serif;background:#fff0f8;color:var(--dark);min-height:100vh}
+.nav{background:linear-gradient(135deg,#1a0a12 0%,#3d0a25 100%);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.nav-brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-title{font-family:'Playfair Display',serif;color:var(--gold-light);font-size:13px;font-weight:700;line-height:1.2}
+.nav-title small{display:block;color:#d4a0b8;font-size:9px;font-family:'Nunito',sans-serif;font-weight:400}
+.nav-tabs{display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;padding-left:8px}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{padding:7px 11px;border:none;background:transparent;color:#d4a0b8;font-family:'Nunito',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border-radius:20px;white-space:nowrap;transition:all .3s}
+.nav-tab.active,.nav-tab:hover{background:linear-gradient(135deg,var(--pink),var(--pink-light));color:#fff}
+.page{display:none;padding:16px;max-width:1100px;margin:0 auto}
+.page.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.hero{background:linear-gradient(135deg,#1a0a12 0%,#3d0a25 50%,#1a0a12 100%);border-radius:18px;padding:32px 24px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 60% 40%,rgba(201,168,76,0.15) 0%,transparent 60%),radial-gradient(circle at 30% 70%,rgba(233,30,140,0.12) 0%,transparent 50%);pointer-events:none}
+.hero h1{font-family:'Playfair Display',serif;color:var(--gold-light);font-size:clamp(20px,4vw,32px);margin-bottom:6px;position:relative}
+.hero p{color:#d4a0b8;font-size:13px;position:relative}
+.hero-badges{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap;position:relative}
+.badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px}
+.badge-gold{background:rgba(201,168,76,0.2);color:var(--gold-light);border:1px solid rgba(201,168,76,0.4)}
+.badge-pink{background:rgba(233,30,140,0.2);color:var(--pink-light);border:1px solid rgba(233,30,140,0.4)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow);border-left:4px solid var(--pink);position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;background:var(--pink-pale);border-radius:50%}
+.stat-card.gold{border-left-color:var(--gold)}.stat-card.gold::after{background:var(--gold-pale)}
+.stat-card.success{border-left-color:var(--success)}.stat-card.success::after{background:#f0fff8}
+.stat-card.danger{border-left-color:var(--danger)}.stat-card.danger::after{background:#fff5f5}
+.stat-icon{font-size:20px;margin-bottom:6px;position:relative;z-index:1}
+.stat-value{font-size:20px;font-weight:800;color:var(--dark);position:relative;z-index:1}
+.stat-label{font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.card{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+.card-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--pink),transparent);border-radius:2px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{padding:11px 13px;border:2px solid #f0e0ea;border-radius:11px;font-family:'Nunito',sans-serif;font-size:14px;color:var(--dark);background:#fff;transition:border-color .3s,box-shadow .3s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(233,30,140,0.1)}
+textarea{resize:vertical;min-height:70px}
+.upload-zone{border:2px dashed #f0c0d8;border-radius:11px;padding:20px;text-align:center;cursor:pointer;background:var(--pink-pale);transition:all .3s}
+.upload-zone:hover{border-color:var(--pink);background:#ffe0f2}
+.upload-zone p{font-size:11px;color:var(--gray);margin-top:5px}
+.btn{padding:11px 22px;border:none;border-radius:11px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:linear-gradient(135deg,var(--pink),var(--pink-light));color:#fff;box-shadow:0 4px 16px rgba(233,30,140,0.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(233,30,140,0.45)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#1a0a12;box-shadow:var(--shadow-gold)}
+.btn-gold:hover{transform:translateY(-2px)}
+.btn-outline{background:transparent;color:var(--pink);border:2px solid var(--pink)}
+.btn-outline:hover{background:var(--pink);color:#fff}
+.btn-sm{padding:7px 14px;font-size:11px}
+.btn-full{width:100%;justify-content:center}
+.calc-result{background:linear-gradient(135deg,#1a0a12,#3d0a25);border-radius:14px;padding:20px;margin-top:16px}
+.calc-result h3{color:var(--gold-light);font-family:'Playfair Display',serif;margin-bottom:14px;font-size:16px}
+.calc-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#d4a0b8;font-size:13px}
+.calc-row:last-child{border-bottom:none}
+.calc-row span:last-child{color:var(--gold-light);font-weight:700}
+.calc-row.total span{color:#fff;font-size:15px;font-weight:800}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:linear-gradient(135deg,#1a0a12,#3d0a25);color:var(--gold-light);padding:11px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+th:first-child{border-radius:9px 0 0 0}th:last-child{border-radius:0 9px 0 0}
+td{padding:11px 12px;border-bottom:1px solid #f5eef3;vertical-align:middle}
+tr:hover td{background:var(--pink-pale)}
+tr:last-child td{border-bottom:none}
+.status{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.status-active{background:#e8f8ef;color:#27ae60}
+.status-overdue{background:#fdecea;color:#e74c3c}
+.status-paid{background:#e8f0fe;color:#3b82f6}
+.status-pending{background:#fff8e1;color:#f59e0b}
+.progress-wrap{background:#f0e0ea;border-radius:8px;height:7px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--pink),var(--gold));border-radius:8px;transition:width .6s ease}
+.client-card{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--shadow);border:1px solid #f5eef3;transition:all .3s;cursor:pointer}
+.client-card:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(233,30,140,0.18)}
+.client-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0}
+.client-info{flex:1}
+.client-name{font-weight:700;font-size:14px}
+.client-detail{font-size:11px;color:var(--gray);margin-top:2px}
+.sched-table th{padding:7px 9px}.sched-table td{padding:7px 9px}
+.paid-row td{color:#27ae60;background:#f0fff4!important}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex;animation:fadeIn .3s ease}
+.modal{background:#fff;border-radius:18px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--pink-pale);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--pink)}
+.search-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:150px}
+.filter-tabs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.filter-tab{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid #f0e0ea;background:transparent;color:var(--gray);transition:all .3s}
+.filter-tab.active{background:var(--pink);color:#fff;border-color:var(--pink)}
+.pkg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.pkg-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:2px solid transparent;transition:all .3s}
+.pkg-card:hover{border-color:var(--pink);transform:translateY(-3px)}
+.pkg-img{height:120px;background:linear-gradient(135deg,#f8e0ef,#fff0c0);display:flex;align-items:center;justify-content:center;font-size:44px;position:relative}
+.pkg-cat-badge{position:absolute;top:7px;left:7px;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:700;background:rgba(255,255,255,0.9);color:var(--pink)}
+.pkg-body{padding:12px}
+.pkg-name{font-weight:700;font-size:13px;margin-bottom:3px}
+.pkg-price{color:var(--pink);font-weight:800;font-size:16px}
+.pkg-pax{font-size:10px;color:var(--gray);margin-top:2px}
+.portal-login{max-width:360px;margin:32px auto}
+.otp-input{display:flex;gap:9px;justify-content:center;margin:14px 0}
+.otp-input input{width:50px;height:50px;text-align:center;font-size:20px;font-weight:800;border-radius:11px;border:2px solid #f0e0ea;padding:0}
+.timeline{position:relative;padding-left:26px}
+.timeline::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--pink),var(--gold));border-radius:2px}
+.timeline-item{position:relative;margin-bottom:18px}
+.timeline-dot{position:absolute;left:-21px;top:4px;width:13px;height:13px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--gold));border:2px solid #fff;box-shadow:0 2px 8px rgba(233,30,140,0.3)}
+.timeline-dot.done{background:var(--success)}
+.timeline-content{background:var(--pink-pale);border-radius:11px;padding:11px 13px}
+.timeline-date{font-size:10px;color:var(--gray);font-weight:700}
+.timeline-label{font-size:12px;font-weight:700;margin-top:2px}
+.timeline-amount{color:var(--pink);font-weight:800;font-size:14px}
+.collector-header{background:linear-gradient(135deg,#1a0a12,#3d0a25);border-radius:14px;padding:18px;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:13px}
+.collector-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));display:flex;align-items:center;justify-content:center;font-size:20px;color:#1a0a12;font-weight:800;flex-shrink:0}
+.receipt{background:#fff;border:2px dashed #f0e0ea;border-radius:14px;padding:22px;max-width:340px;margin:0 auto}
+.receipt-header{text-align:center;border-bottom:2px dashed #f0e0ea;padding-bottom:14px;margin-bottom:14px}
+.receipt-logo{font-family:'Playfair Display',serif;color:var(--pink);font-size:18px;font-weight:700}
+.receipt-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}
+.receipt-row span:last-child{font-weight:700}
+.receipt-total{border-top:2px solid var(--pink);margin-top:9px;padding-top:9px}
+.receipt-total span{font-weight:800;color:var(--pink);font-size:15px}
+.toast-container{position:fixed;bottom:18px;right:18px;z-index:3000;display:flex;flex-direction:column;gap:8px}
+.toast{background:#1a0a12;color:#fff;padding:12px 18px;border-radius:11px;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);border-left:4px solid var(--gold);animation:slideIn .4s ease;max-width:260px}
+@keyframes slideIn{from{transform:translateX(120%)}to{transform:translateX(0)}}
+.chart-bar-wrap{display:flex;align-items:flex-end;gap:7px;height:110px;margin-top:8px}
+.chart-bar-col{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;justify-content:flex-end}
+.chart-bar-inner{width:100%;background:linear-gradient(180deg,var(--pink),var(--gold));border-radius:5px 5px 0 0;min-height:4px;transition:height .8s ease}
+.chart-bar-label{font-size:9px;color:var(--gray);margin-top:3px}
+.chart-bar-val{font-size:9px;font-weight:700;color:var(--pink);margin-bottom:2px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--pink),transparent);margin:14px 0}
+.flex{display:flex}.items-center{align-items:center}.gap-10{gap:10px}.gap-14{gap:14px}.justify-between{justify-content:space-between}
+.mt-10{margin-top:10px}.mt-16{margin-top:16px}.mb-10{margin-bottom:10px}
+.text-pink{color:var(--pink)}.text-gold{color:var(--gold)}.text-gray{color:var(--gray)}
+.font-bold{font-weight:700}.font-sm{font-size:11px}.text-center{text-align:center}
+@media(max-width:400px){.nav-title{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">🌸</div>
+    <div class="nav-title">Eurika's<small>Party Trays & Catering</small></div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button class="nav-tab" onclick="showPage('apply',this)">📝 Apply</button>
+    <button class="nav-tab" onclick="showPage('clients',this)">👥 Clients</button>
+    <button class="nav-tab" onclick="showPage('calculator',this)">🧮 Calc</button>
+    <button class="nav-tab" onclick="showPage('packages',this)">🎁 Packages</button>
+    <button class="nav-tab" onclick="showPage('collector',this)">💼 Collector</button>
+    <button class="nav-tab" onclick="showPage('portal',this)">👤 Portal</button>
+  </div>
+</nav>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('receiptModal').classList.remove('open')">✕</button>
+    <div id="receiptContent"></div>
+    <button class="btn btn-primary btn-full mt-16" onclick="window.print()">🖨️ Print Receipt</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="hero">
+    <h1>✨ Eurika's Installment System</h1>
+    <p>Party Trays, Catering & Events — Butuan City</p>
+    <div class="hero-badges">
+      <span class="badge badge-gold">👑 Admin Dashboard</span>
+      <span class="badge badge-pink">🌸 Luxury Theme</span>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">12</div><div class="stat-label">Active Clients</div></div>
+    <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-value">₱128,450</div><div class="stat-label">Total Collectibles</div></div>
+    <div class="stat-card danger"><div class="stat-icon">⚠️</div><div class="stat-value">3</div><div class="stat-label">Overdue</div></div>
+    <div class="stat-card success"><div class="stat-icon">📅</div><div class="stat-value">₱24,800</div><div class="stat-label">Due This Week</div></div>
+    <div class="stat-card gold"><div class="stat-icon">📈</div><div class="stat-value">₱45,200</div><div class="stat-label">Monthly Income</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">8</div><div class="stat-label">Paid This Month</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📊 Monthly Collection</div>
+    <div class="chart-bar-wrap" id="dashChart"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">⚠️ Overdue Clients</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Client</th><th>Package</th><th>Overdue Amt</th><th>Days</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Maria Santos</strong><br><span class="font-sm text-gray">0917-123-4567</span></td><td>Gold Party Pkg</td><td class="text-pink font-bold">₱3,500</td><td><span class="status status-overdue">5 days</span></td><td><button class="btn btn-sm btn-primary" onclick="showToast('📞 Reminder sent to Maria Santos!')">Remind</button></td></tr>
+          <tr><td><strong>Ana Reyes</strong><br><span class="font-sm text-gray">0918-234-5678</span></td><td>Catering 50pax</td><td class="text-pink font-bold">₱5,250</td><td><span class="status status-overdue">12 days</span></td><td><button class="btn btn-sm btn-primary" onclick="showToast('📞 Reminder sent to Ana Reyes!')">Remind</button></td></tr>
+          <tr><td><strong>Joy Lim</strong><br><span class="font-sm text-gray">0919-345-6789</span></td><td>Dino Theme</td><td class="text-pink font-bold">₱4,666</td><td><span class="status status-overdue">2 days</span></td><td><button class="btn btn-sm btn-primary" onclick="showToast('📞 Reminder sent to Joy Lim!')">Remind</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📅 Due This Week</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Client</th><th>Due Date</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Rose Garcia</strong></td><td>May 21, 2026</td><td class="font-bold">₱4,025</td><td><span class="status status-active">Tomorrow</span></td></tr>
+          <tr><td><strong>Bella Cruz</strong></td><td>May 22, 2026</td><td class="font-bold">₱3,500</td><td><span class="status status-active">2 Days</span></td></tr>
+          <tr><td><strong>Lena Torres</strong></td><td>May 24, 2026</td><td class="font-bold">₱5,250</td><td><span class="status status-active">4 Days</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="showToast('📊 Exporting Excel...')">📊 Export Excel</button>
+    <button class="btn btn-outline" onclick="showToast('📄 Generating PDF...')">📄 Export PDF</button>
+    <button class="btn btn-primary" onclick="showToast('📲 Sending all reminders!')">📲 Send All Reminders</button>
+  </div>
+</div>
+
+<!-- APPLY -->
+<div id="page-apply" class="page">
+  <div class="hero">
+    <h1>📝 Installment Application</h1>
+    <p>Apply for an installment plan for your dream event</p>
+  </div>
+  <div class="card">
+    <div class="card-title">👤 Personal Information</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Full Name *</label><input type="text" id="app-name" placeholder="e.g. Maria Santos"></div>
+      <div class="form-group"><label>Contact Number *</label><input type="tel" id="app-phone" placeholder="09XX-XXX-XXXX"></div>
+      <div class="form-group"><label>Facebook Name</label><input type="text" id="app-fb" placeholder="Facebook name or profile"></div>
+      <div class="form-group"><label>Event Date *</label><input type="date" id="app-date"></div>
+      <div class="form-group full"><label>Complete Address *</label><textarea id="app-address" placeholder="House No., Street, Barangay, City"></textarea></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🎁 Package Selection</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Service Type *</label>
+        <select id="app-service" onchange="updatePackages()">
+          <option value="">-- Select Service --</option>
+          <option value="party">🎉 Party Package</option>
+          <option value="catering">🍽️ Catering Service</option>
+          <option value="food">🥡 Food Trays</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Package *</label>
+        <select id="app-package" onchange="updatePrice()"><option value="">-- Select Package --</option></select>
+      </div>
+      <div class="form-group"><label>Package Price</label><input type="text" id="app-price" placeholder="Auto-filled" readonly style="background:#f5f0f3;color:var(--pink);font-weight:700"></div>
+      <div class="form-group"><label>Good For (Pax)</label><input type="text" id="app-pax" placeholder="Auto-filled" readonly style="background:#f5f0f3"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">💳 Payment Plan</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Payment Frequency *</label>
+        <select id="app-freq" onchange="computeInstallment()">
+          <option value="">-- Select --</option>
+          <option value="monthly">Monthly</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Duration *</label>
+        <select id="app-months" onchange="computeInstallment()">
+          <option value="">-- Select --</option>
+          <option value="3">3 Months</option>
+          <option value="4">4 Months</option>
+          <option value="6">6 Months</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Downpayment Amount (₱) *</label><input type="number" id="app-down" placeholder="Enter downpayment amount" oninput="computeInstallment()"></div>
+    </div>
+    <div id="app-result" style="display:none">
+      <div class="calc-result">
+        <h3>💰 Your Installment Plan</h3>
+        <div class="calc-row"><span>Package Price</span><span id="res-price">₱0</span></div>
+        <div class="calc-row"><span>Downpayment</span><span id="res-down">₱0</span></div>
+        <div class="calc-row"><span>Balance After DP</span><span id="res-balance">₱0</span></div>
+        <div class="calc-row"><span>Interest (<span id="res-rate">0</span>%)</span><span id="res-interest">₱0</span></div>
+        <div class="calc-row total"><span>Total Payable</span><span id="res-total">₱0</span></div>
+        <div class="calc-row total"><span id="res-freq-label">Monthly Payment</span><span id="res-payment">₱0</span></div>
+      </div>
+      <div id="app-amort" class="mt-16"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📎 Upload Documents</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Valid ID *</label><div class="upload-zone" onclick="showToast('📎 File picker opened!')"><div style="font-size:28px">🪪</div><p>Tap to upload Valid ID<br>JPG, PNG, PDF</p></div></div>
+      <div class="form-group"><label>Proof of Downpayment *</label><div class="upload-zone" onclick="showToast('📎 File picker opened!')"><div style="font-size:28px">🧾</div><p>Tap to upload GCash screenshot<br>or bank receipt</p></div></div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-full" style="font-size:15px;padding:15px" onclick="submitApplication()">✨ Submit Installment Application</button>
+</div>
+
+<!-- CLIENTS -->
+<div id="page-clients" class="page">
+  <div class="hero">
+    <h1>👥 Client Management</h1>
+    <p>View, search and manage all installment clients</p>
+  </div>
+  <div class="card">
+    <div class="search-bar">
+      <input type="text" placeholder="🔍 Search by name or phone..." id="clientSearch" oninput="filterClients()">
+      <button class="btn btn-sm btn-gold" onclick="showToast('📊 Exporting...')">📊 Export</button>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="setClientFilter(this,'all')">All (8)</button>
+      <button class="filter-tab" onclick="setClientFilter(this,'active')">✅ Active</button>
+      <button class="filter-tab" onclick="setClientFilter(this,'overdue')">⚠️ Overdue</button>
+      <button class="filter-tab" onclick="setClientFilter(this,'paid')">💚 Paid</button>
+    </div>
+    <div id="clientList" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
+
+<!-- CALCULATOR -->
+<div id="page-calculator" class="page">
+  <div class="hero">
+    <h1>🧮 Installment Calculator</h1>
+    <p>Compute payments instantly — no sign-up needed</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Enter Details</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Package Price (₱) *</label><input type="number" id="calc-price" placeholder="e.g. 29999" oninput="calcCompute()"></div>
+      <div class="form-group"><label>Downpayment (₱)</label><input type="number" id="calc-down" placeholder="e.g. 5000" oninput="calcCompute()"></div>
+      <div class="form-group"><label>Number of Months *</label>
+        <select id="calc-months" onchange="calcCompute()">
+          <option value="">-- Select --</option>
+          <option value="3">3 Months</option>
+          <option value="4">4 Months</option>
+          <option value="6">6 Months</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Payment Frequency</label>
+        <select id="calc-freq" onchange="calcCompute()">
+          <option value="monthly">Monthly</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+    </div>
+    <div id="calc-result" style="display:none">
+      <div class="calc-result">
+        <h3>📊 Computation Result</h3>
+        <div class="calc-row"><span>Package Price</span><span id="cr-price">—</span></div>
+        <div class="calc-row"><span>Downpayment</span><span id="cr-down">—</span></div>
+        <div class="calc-row"><span>Balance After DP</span><span id="cr-balance">—</span></div>
+        <div class="calc-row"><span>Interest Rate</span><span id="cr-rate">—</span></div>
+        <div class="calc-row"><span>Total Interest</span><span id="cr-interest">—</span></div>
+        <div class="calc-row total"><span>Total Payable</span><span id="cr-total">—</span></div>
+        <div class="divider"></div>
+        <div class="calc-row total"><span>Monthly Payment</span><span id="cr-monthly">—</span></div>
+        <div class="calc-row total"><span>Weekly Payment</span><span id="cr-weekly">—</span></div>
+      </div>
+      <div class="card mt-16" style="margin-bottom:0">
+        <div class="card-title">📅 Amortization Schedule</div>
+        <div class="table-wrap">
+          <table class="sched-table">
+            <thead><tr><th>#</th><th>Due Date</th><th>Payment</th><th>Balance</th><th>Status</th></tr></thead>
+            <tbody id="amortBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PACKAGES -->
+<div id="page-packages" class="page">
+  <div class="hero">
+    <h1>🎁 Package Management</h1>
+    <p>All catering and party packages in one place</p>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-primary" onclick="showToast('➕ Add Package form opened!')">➕ Add Package</button>
+    <div class="filter-tabs" style="margin-bottom:0">
+      <button class="filter-tab active" onclick="filterPkgs(this,'all')">All</button>
+      <button class="filter-tab" onclick="filterPkgs(this,'Party')">🎉 Party</button>
+      <button class="filter-tab" onclick="filterPkgs(this,'Catering')">🍽️ Catering</button>
+      <button class="filter-tab" onclick="filterPkgs(this,'Food')">🥡 Food</button>
+    </div>
+  </div>
+  <div class="pkg-grid" id="pkgGrid"></div>
+</div>
+
+<!-- COLLECTOR -->
+<div id="page-collector" class="page">
+  <div class="collector-header">
+    <div class="collector-avatar">JD</div>
+    <div>
+      <div style="font-size:15px;font-weight:700;color:var(--gold-light)">Juan Dela Cruz</div>
+      <div style="font-size:11px;color:#d4a0b8">Collector · Butuan City Area</div>
+      <div style="font-size:11px;color:#d4a0b8;margin-top:2px">📋 5 Assigned Clients</div>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">5</div><div class="stat-label">My Clients</div></div>
+    <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-value">₱52,400</div><div class="stat-label">To Collect</div></div>
+    <div class="stat-card danger"><div class="stat-icon">⚠️</div><div class="stat-value">2</div><div class="stat-label">Overdue</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 My Assigned Clients</div>
+    <div style="display:flex;flex-direction:column;gap:10px" id="collectorClients"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">💵 Record a Payment</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Client</label>
+        <select><option>Maria Santos</option><option>Bella Cruz</option><option>Lena Torres</option><option>Nora Bautista</option></select>
+      </div>
+      <div class="form-group"><label>Amount Paid (₱)</label><input type="number" placeholder="e.g. 4025"></div>
+      <div class="form-group"><label>Date Paid</label><input type="date"></div>
+      <div class="form-group"><label>Payment Method</label>
+        <select><option>GCash</option><option>Cash</option><option>Bank Transfer</option></select>
+      </div>
+      <div class="form-group full"><label>Notes</label><input type="text" placeholder="e.g. GCash ref. no. 12345"></div>
+      <div class="form-group full"><label>Upload Receipt</label><div class="upload-zone" onclick="showToast('📎 Camera/Gallery opened!')"><div style="font-size:26px">📸</div><p>Tap to upload receipt photo</p></div></div>
+    </div>
+    <button class="btn btn-primary btn-full mt-16" onclick="recordPayment()">✅ Record Payment</button>
+  </div>
+</div>
+
+<!-- PORTAL -->
+<div id="page-portal" class="page">
+  <div class="hero">
+    <h1>👤 Customer Portal</h1>
+    <p>Check your balance and payment history</p>
+  </div>
+  <div id="portal-login-view">
+    <div class="portal-login">
+      <div class="card">
+        <div class="card-title">🔐 Login with Phone Number</div>
+        <div class="form-group"><label>Mobile Number</label><input type="tel" id="portal-phone" placeholder="09XX-XXX-XXXX"></div>
+        <button class="btn btn-primary btn-full mt-16" onclick="sendOTP()">📲 Send OTP Code</button>
+      </div>
+      <div class="card" id="otp-card" style="display:none">
+        <div class="card-title">Enter OTP</div>
+        <p class="font-sm text-gray mb-10">4-digit code sent to your number</p>
+        <div class="otp-input">
+          <input type="text" maxlength="1" oninput="otpNext(this,0)">
+          <input type="text" maxlength="1" oninput="otpNext(this,1)">
+          <input type="text" maxlength="1" oninput="otpNext(this,2)">
+          <input type="text" maxlength="1" oninput="otpNext(this,3)">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="verifyOTP()">✅ Verify & Login</button>
+      </div>
+    </div>
+  </div>
+  <div id="portal-dashboard-view" style="display:none">
+    <div class="card" style="background:linear-gradient(135deg,#1a0a12,#3d0a25)">
+      <div class="flex items-center gap-14" style="margin-bottom:14px">
+        <div class="client-avatar" style="background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#1a0a12;width:50px;height:50px;font-size:18px">MS</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--gold-light)">Maria Santos</div>
+          <div style="font-size:11px;color:#d4a0b8">Client ID: EPC-2026-001</div>
+        </div>
+        <button class="btn btn-sm" style="margin-left:auto;background:transparent;color:#d4a0b8;border:1px solid #d4a0b8;border-radius:8px" onclick="portalLogout()">Logout</button>
+      </div>
+      <div class="calc-row"><span style="color:#d4a0b8">Package</span><span style="color:var(--gold-light)">Gold Party Package</span></div>
+      <div class="calc-row"><span style="color:#d4a0b8">Event Date</span><span style="color:#fff">June 15, 2026</span></div>
+      <div class="calc-row"><span style="color:#d4a0b8">Total Payable</span><span style="color:var(--gold-light)">₱12,075</span></div>
+      <div class="calc-row"><span style="color:#d4a0b8">Amount Paid</span><span style="color:var(--success)">₱8,050</span></div>
+      <div class="calc-row total"><span style="color:#fff">Remaining Balance</span><span style="color:var(--pink-light)">₱4,025</span></div>
+      <div style="margin-top:12px">
+        <div style="font-size:10px;color:#d4a0b8;margin-bottom:5px">Payment Progress — 67% Complete</div>
+        <div class="progress-wrap" style="background:rgba(255,255,255,0.1)"><div class="progress-bar" style="width:67%"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Next Due Payment</div>
+      <div style="background:var(--pink-pale);border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:26px;font-weight:800;color:var(--pink)">₱4,025</div>
+        <div style="font-size:13px;font-weight:700;margin-top:4px">Due: June 1, 2026</div>
+        <div style="font-size:11px;color:var(--gray)">Monthly · Month 3 of 3</div>
+        <button class="btn btn-primary mt-16" onclick="showToast('📱 GCash QR Code displayed!')">📱 Pay via GCash</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📜 Payment History</div>
+      <div class="timeline">
+        <div class="timeline-item"><div class="timeline-dot done"></div><div class="timeline-content"><div class="timeline-date">April 1, 2026</div><div class="timeline-label">Month 1 — Paid ✅</div><div class="timeline-amount">₱4,025</div></div></div>
+        <div class="timeline-item"><div class="timeline-dot done"></div><div class="timeline-content"><div class="timeline-date">May 1, 2026</div><div class="timeline-label">Month 2 — Paid ✅</div><div class="timeline-amount">₱4,025</div></div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-date">June 1, 2026</div><div class="timeline-label">Month 3 — Pending ⏳</div><div class="timeline-amount" style="color:var(--gray)">₱4,025</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📤 Upload Payment Proof</div>
+      <div class="upload-zone" onclick="showToast('📎 File picker opened!')"><div style="font-size:26px">📸</div><p>Upload GCash screenshot or receipt<br>Admin will verify within 24 hours</p></div>
+      <button class="btn btn-primary btn-full mt-16" onclick="showToast('✅ Receipt uploaded! Admin will verify soon.')">Submit Receipt</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const packages={
+  party:[
+    {name:'Roblox Theme Party — 60pax',price:29999,pax:60},
+    {name:'Dino Theme Party — 60pax',price:29999,pax:60},
+    {name:'Safari Birthday — 60pax',price:29999,pax:60},
+    {name:'Princess Theme — 60pax',price:29999,pax:60},
+    {name:'Under The Sea — 60pax',price:29999,pax:60},
+    {name:'Butterflies & Flowers — 60pax',price:29999,pax:60},
+    {name:'Retro Birthday — 60pax',price:29999,pax:60},
+    {name:'Planets Theme — 60pax',price:29999,pax:60},
+    {name:'Adult Birthday — 60pax',price:29999,pax:60},
+    {name:'Debut Package — 60pax',price:35000,pax:60},
+    {name:'Intimate Wedding — 50pax',price:35000,pax:50},
+    {name:'Wedding Package — 100pax',price:60000,pax:100},
+    {name:'Christening Package — 60pax',price:29999,pax:60},
+    {name:'Roblox Combo 80pax',price:36999,pax:80},
+    {name:'Roblox Combo 100pax',price:43999,pax:100},
+  ],
+  catering:[
+    {name:'Catering Basic 210/head (50pax)',price:10500,pax:50},
+    {name:'Catering Standard 240/head (50pax)',price:12000,pax:50},
+    {name:'Catering Classic 260/head (50pax)',price:13000,pax:50},
+    {name:'Catering Premium 300/head (50pax)',price:15000,pax:50},
+    {name:'Catering Luxury 360/head (50pax)',price:18000,pax:50},
+    {name:'Catering 100pax (210/head)',price:21000,pax:100},
+    {name:'Catering 100pax (240/head)',price:24000,pax:100},
+  ],
+  food:[
+    {name:'Food Package ₱3,999 (4 trays)',price:3999,pax:30},
+    {name:'Food Package ₱4,299 (4 trays)',price:4299,pax:30},
+    {name:'Food Package ₱4,999 (6 trays)',price:4999,pax:30},
+    {name:'Food Package ₱5,999 (6 trays)',price:5999,pax:30},
+    {name:'Beef Caldereta Tray — Large',price:1800,pax:40},
+    {name:'Chicken Cordon Bleu Tray',price:1800,pax:40},
+    {name:'Lumpia Shanghai 100pcs Tray',price:1500,pax:40},
+    {name:'Pasta Tray Large (40pax)',price:990,pax:40},
+    {name:'Side Dish Tray Large',price:1200,pax:40},
+    {name:'Dessert Cup (min 30pcs)',price:600,pax:30},
+  ]
+};
+
+const sampleClients=[
+  {id:'EPC-001',name:'Maria Santos',phone:'0917-123-4567',pkg:'Gold Party Package',price:10500,months:3,down:2000,status:'overdue',paid:8050,collector:'Juan DC'},
+  {id:'EPC-002',name:'Rose Garcia',phone:'0918-234-5678',pkg:'Wedding 100pax',price:60000,months:6,down:15000,status:'active',paid:30000,collector:'Ana P'},
+  {id:'EPC-003',name:'Bella Cruz',phone:'0919-345-6789',pkg:'Debut Package 60pax',price:35000,months:4,down:8000,status:'active',paid:20000,collector:'Juan DC'},
+  {id:'EPC-004',name:'Ana Reyes',phone:'0920-456-7890',pkg:'Catering 100pax',price:21000,months:3,down:5000,status:'overdue',paid:10000,collector:'Mark R'},
+  {id:'EPC-005',name:'Lena Torres',phone:'0921-567-8901',pkg:'Roblox Theme 60pax',price:29999,months:6,down:7000,status:'active',paid:18000,collector:'Juan DC'},
+  {id:'EPC-006',name:'Joy Lim',phone:'0922-678-9012',pkg:'Princess Theme',price:29999,months:4,down:6000,status:'overdue',paid:12000,collector:'Ana P'},
+  {id:'EPC-007',name:'Grace Tan',phone:'0923-789-0123',pkg:'Food Package 5,999',price:5999,months:3,down:1500,status:'paid',paid:7198,collector:'Mark R'},
+  {id:'EPC-008',name:'Nora Bautista',phone:'0924-890-1234',pkg:'Christening Package',price:29999,months:6,down:8000,status:'active',paid:16000,collector:'Juan DC'},
+];
+
+const pkgData=[
+  {name:'Roblox Theme Party',cat:'Party',price:29999,pax:60,emoji:'🎮'},
+  {name:'Princess Theme Party',cat:'Party',price:29999,pax:60,emoji:'👑'},
+  {name:'Safari Birthday Party',cat:'Party',price:29999,pax:60,emoji:'🦁'},
+  {name:'Under The Sea Party',cat:'Party',price:29999,pax:60,emoji:'🧜'},
+  {name:'Dino Theme Party',cat:'Party',price:29999,pax:60,emoji:'🦕'},
+  {name:'Butterflies & Flowers',cat:'Party',price:29999,pax:60,emoji:'🦋'},
+  {name:'Retro Birthday Party',cat:'Party',price:29999,pax:60,emoji:'🪩'},
+  {name:'Planets Theme Party',cat:'Party',price:29999,pax:60,emoji:'🚀'},
+  {name:'Debut Package',cat:'Party',price:35000,pax:60,emoji:'👸'},
+  {name:'Intimate Wedding 50pax',cat:'Party',price:35000,pax:50,emoji:'💍'},
+  {name:'Wedding Package 100pax',cat:'Party',price:60000,pax:100,emoji:'💒'},
+  {name:'Christening Package',cat:'Party',price:29999,pax:60,emoji:'🕊️'},
+  {name:'Catering 50pax',cat:'Catering',price:13000,pax:50,emoji:'🍽️'},
+  {name:'Catering 100pax',cat:'Catering',price:21000,pax:100,emoji:'🥘'},
+  {name:'Catering Luxury 50pax',cat:'Catering',price:18000,pax:50,emoji:'✨'},
+  {name:'Food Package 3,999',cat:'Food',price:3999,pax:30,emoji:'🥡'},
+  {name:'Food Package 4,999',cat:'Food',price:4999,pax:30,emoji:'🍱'},
+  {name:'Food Package 5,999',cat:'Food',price:5999,pax:30,emoji:'🍲'},
+  {name:'Beef Caldereta Tray',cat:'Food',price:1800,pax:40,emoji:'🥩'},
+  {name:'Lumpia Shanghai Tray',cat:'Food',price:1500,pax:40,emoji:'🥢'},
+];
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='clients') renderClients('all','');
+  if(id==='packages') renderPackages('all');
+  if(id==='collector') renderCollectorClients();
+}
+
+function showToast(msg){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+}
+
+function updatePackages(){
+  const type=document.getElementById('app-service').value;
+  const sel=document.getElementById('app-package');
+  sel.innerHTML='<option value="">-- Select Package --</option>';
+  if(packages[type]) packages[type].forEach((p,i)=>{sel.innerHTML+=`<option value="${i}">${p.name} — ₱${p.price.toLocaleString()}</option>`;});
+  document.getElementById('app-price').value='';
+  document.getElementById('app-pax').value='';
+  document.getElementById('app-result').style.display='none';
+}
+
+function updatePrice(){
+  const type=document.getElementById('app-service').value;
+  const idx=document.getElementById('app-package').value;
+  if(packages[type]&&idx!==''){
+    const pkg=packages[type][idx];
+    document.getElementById('app-price').value='₱'+pkg.price.toLocaleString();
+    document.getElementById('app-pax').value=pkg.pax+' pax';
+  }
+  computeInstallment();
+}
+
+function computeInstallment(){
+  const type=document.getElementById('app-service').value;
+  const idx=document.getElementById('app-package').value;
+  const freq=document.getElementById('app-freq').value;
+  const months=parseInt(document.getElementById('app-months').value)||0;
+  const down=parseFloat(document.getElementById('app-down').value)||0;
+  if(!type||idx===''||!freq||!months) return;
+  const pkg=packages[type][idx];
+  const price=pkg.price;
+  const balance=price-down;
+  const rate=0.05*months;
+  const interest=balance*rate;
+  const total=balance+interest;
+  const monthly=total/months;
+  const weekly=monthly/4;
+  document.getElementById('app-result').style.display='block';
+  document.getElementById('res-price').textContent='₱'+price.toLocaleString();
+  document.getElementById('res-down').textContent='₱'+down.toLocaleString();
+  document.getElementById('res-balance').textContent='₱'+balance.toLocaleString();
+  document.getElementById('res-rate').textContent=(rate*100).toFixed(0);
+  document.getElementById('res-interest').textContent='₱'+interest.toFixed(2);
+  document.getElementById('res-total').textContent='₱'+total.toFixed(2);
+  document.getElementById('res-freq-label').textContent=freq==='monthly'?'Monthly Payment':'Weekly Payment';
+  document.getElementById('res-payment').textContent='₱'+(freq==='monthly'?monthly:weekly).toFixed(2);
+  renderAmort('app-amort',total,months,freq,monthly);
+}
+
+function renderAmort(targetId,total,months,freq,monthly){
+  const today=new Date();
+  const payment=freq==='monthly'?monthly:monthly/4;
+  const periods=freq==='monthly'?months:months*4;
+  let bal=total;
+  let html=`<div class="card" style="margin-bottom:0"><div class="card-title">📅 Payment Schedule</div><div class="table-wrap"><table class="sched-table"><thead><tr><th>#</th><th>Due Date</th><th>Payment</th><th>Balance</th></tr></thead><tbody>`;
+  for(let i=1;i<=periods;i++){
+    const d=new Date(today);
+    if(freq==='monthly') d.setMonth(d.getMonth()+i); else d.setDate(d.getDate()+(i*7));
+    bal-=payment; if(bal<0) bal=0;
+    html+=`<tr><td>${i}</td><td>${d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})}</td><td class="text-pink font-bold">₱${payment.toFixed(2)}</td><td>₱${bal.toFixed(2)}</td></tr>`;
+  }
+  html+='</tbody></table></div></div>';
+  document.getElementById(targetId).innerHTML=html;
+}
+
+function calcCompute(){
+  const price=parseFloat(document.getElementById('calc-price').value)||0;
+  const down=parseFloat(document.getElementById('calc-down').value)||0;
+  const months=parseInt(document.getElementById('calc-months').value)||0;
+  const freq=document.getElementById('calc-freq').value;
+  if(!price||!months){document.getElementById('calc-result').style.display='none';return;}
+  const balance=price-down;
+  const rate=0.05*months;
+  const interest=balance*rate;
+  const total=balance+interest;
+  const monthly=total/months;
+  const weekly=monthly/4;
+  document.getElementById('calc-result').style.display='block';
+  document.getElementById('cr-price').textContent='₱'+price.toLocaleString();
+  document.getElementById('cr-down').textContent='₱'+down.toLocaleString();
+  document.getElementById('cr-balance').textContent='₱'+balance.toLocaleString();
+  document.getElementById('cr-rate').textContent=(rate*100).toFixed(0)+'%';
+  document.getElementById('cr-interest').textContent='₱'+interest.toFixed(2);
+  document.getElementById('cr-total').textContent='₱'+total.toFixed(2);
+  document.getElementById('cr-monthly').textContent='₱'+monthly.toFixed(2);
+  document.getElementById('cr-weekly').textContent='₱'+weekly.toFixed(2);
+  const today=new Date();
+  const payment=freq==='monthly'?monthly:weekly;
+  const periods=freq==='monthly'?months:months*4;
+  let bal=total;let rows='';
+  for(let i=1;i<=periods;i++){
+    const d=new Date(today);
+    if(freq==='monthly') d.setMonth(d.getMonth()+i); else d.setDate(d.getDate()+(i*7));
+    bal-=payment; if(bal<0) bal=0;
+    rows+=`<tr><td>${i}</td><td>${d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})}</td><td class="font-bold">₱${payment.toFixed(2)}</td><td>₱${bal.toFixed(2)}</td><td><span class="status ${i===1?'status-paid':'status-active'}">${i===1?'Paid':'Pending'}</span></td></tr>`;
+  }
+  document.getElementById('amortBody').innerHTML=rows;
+}
+
+let clientFilterState='all';
+function renderClients(filter,search){
+  let list=sampleClients;
+  if(filter&&filter!=='all') list=list.filter(c=>c.status===filter);
+  if(search) list=list.filter(c=>c.name.toLowerCase().includes(search.toLowerCase())||c.phone.includes(search));
+  const container=document.getElementById('clientList');
+  if(!container) return;
+  container.innerHTML=list.map(c=>{
+    const total=(c.price-c.down)*(1+0.05*c.months)+c.down;
+    const pct=Math.min(100,Math.round((c.paid/total)*100));
+    const rem=total-c.paid;
+    return `<div class="client-card" onclick="viewClient(${c.id.replace('-','_')})">
+      <div class="flex items-center gap-14">
+        <div class="client-avatar">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+        <div class="client-info">
+          <div class="client-name">${c.name}</div>
+          <div class="client-detail">${c.phone} · ${c.pkg}</div>
+          <div class="client-detail">Collector: ${c.collector} · ${c.id}</div>
+        </div>
+        <span class="status status-${c.status}">${c.status}</span>
+      </div>
+      <div style="margin-top:10px">
+        <div class="flex justify-between font-sm text-gray mb-10">
+          <span>Paid: ₱${c.paid.toLocaleString()} / ₱${total.toFixed(0)}</span><span>${pct}%</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+  window._clients=list;
+}
+
+function setClientFilter(el,f){
+  el.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  clientFilterState=f;
+  renderClients(f,document.getElementById('clientSearch').value);
+}
+function filterClients(){renderClients(clientFilterState,document.getElementById('clientSearch').value);}
+
+function viewClient(rawId){
+  const idStr=rawId.toString().replace('_','-');
+  const c=sampleClients.find(x=>x.id===('EPC-00'+rawId)||x.id===idStr)||sampleClients[0];
+  const total=(c.price-c.down)*(1+0.05*c.months)+c.down;
+  const rem=total-c.paid;
+  const pct=Math.min(100,Math.round((c.paid/total)*100));
+  document.getElementById('modalContent').innerHTML=`
+    <div class="flex items-center gap-14 mb-10">
+      <div class="client-avatar" style="width:52px;height:52px;font-size:18px">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+      <div><div style="font-size:17px;font-weight:700">${c.name}</div><div class="font-sm text-gray">${c.phone} · ${c.id}</div><span class="status status-${c.status} mt-10">${c.status.toUpperCase()}</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="calc-result" style="margin-top:0">
+      <h3>📊 Installment Summary</h3>
+      <div class="calc-row"><span>Package</span><span>${c.pkg}</span></div>
+      <div class="calc-row"><span>Duration</span><span>${c.months} months</span></div>
+      <div class="calc-row"><span>Total Payable</span><span>₱${total.toFixed(2)}</span></div>
+      <div class="calc-row"><span>Amount Paid</span><span style="color:var(--success)">₱${c.paid.toLocaleString()}</span></div>
+      <div class="calc-row total"><span>Remaining Balance</span><span style="color:var(--pink-light)">₱${rem.toFixed(2)}</span></div>
+    </div>
+    <div style="margin:14px 0">
+      <div class="flex justify-between font-sm text-gray mb-10"><span>Payment Progress</span><span>${pct}%</span></div>
+      <div class="progress-wrap" style="height:11px"><div class="progress-bar" style="width:${pct}%"></div></div>
+    </div>
+    <div class="flex gap-10 mt-16" style="flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="showReceiptModal('${c.name}','${c.pkg}',${c.paid})">🧾 Receipt</button>
+      <button class="btn btn-gold btn-sm" onclick="showToast('📲 Reminder sent to ${c.name}!')">📲 Remind</button>
+      <button class="btn btn-outline btn-sm" onclick="showToast('✏️ Edit opened!')">✏️ Edit</button>
+      <button class="btn btn-sm" style="background:#fdecea;color:var(--danger);border-radius:11px;font-weight:700" onclick="showToast('🚫 Client deactivated!')">🚫 Deactivate</button>
+    </div>`;
+  document.getElementById('clientModal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('clientModal').classList.remove('open');}
+
+function showReceiptModal(name,pkg,paid){
+  const today=new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  const ref=Math.floor(Math.random()*90000+10000);
+  document.getElementById('receiptContent').innerHTML=`
+    <div class="receipt">
+      <div class="receipt-header">
+        <div class="receipt-logo">🌸 Eurika's Party Trays</div>
+        <div class="font-sm text-gray" style="margin-top:3px">& Catering Services — Butuan City</div>
+        <div class="font-sm text-gray">Official Payment Receipt</div>
+        <div class="font-sm text-gray">${today}</div>
+      </div>
+      <div class="receipt-row"><span>Client Name</span><span>${name}</span></div>
+      <div class="receipt-row"><span>Package</span><span>${pkg}</span></div>
+      <div class="receipt-row"><span>Receipt No.</span><span>#EUR-${ref}</span></div>
+      <div class="divider"></div>
+      <div class="receipt-row receipt-total"><span>Amount Paid</span><span>₱${paid.toLocaleString()}</span></div>
+      <div style="text-align:center;margin-top:14px">
+        <div style="font-size:10px;color:var(--gray)">Thank you for your payment! 💕</div>
+        <div style="font-size:10px;color:var(--gray)">Eurika's Party Trays & Catering · Butuan City</div>
+        <div style="font-size:10px;color:var(--gray)">📞 0915-197-1790</div>
+      </div>
+    </div>`;
+  document.getElementById('receiptModal').classList.add('open');
+  closeModal();
+}
+
+function renderPackages(filter){
+  const grid=document.getElementById('pkgGrid');
+  if(!grid) return;
+  const list=filter&&filter!=='all'?pkgData.filter(p=>p.cat===filter):pkgData;
+  grid.innerHTML=list.map(p=>`
+    <div class="pkg-card">
+      <div class="pkg-img"><span class="pkg-cat-badge">${p.cat}</span>${p.emoji}</div>
+      <div class="pkg-body">
+        <div class="pkg-name">${p.name}</div>
+        <div class="pkg-price">₱${p.price.toLocaleString()}</div>
+        <div class="pkg-pax">Good for ${p.pax} pax</div>
+        <div class="flex gap-10 mt-10">
+          <button class="btn btn-sm btn-outline" onclick="showToast('✏️ Edit: ${p.name}')">Edit</button>
+          <button class="btn btn-sm btn-primary" onclick="showToast('🧮 Computing for ${p.name}...')">Compute</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function filterPkgs(el,cat){
+  el.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderPackages(cat);
+}
+
+function renderCollectorClients(){
+  const assigned=sampleClients.filter(c=>c.collector==='Juan DC');
+  const container=document.getElementById('collectorClients');
+  if(!container) return;
+  container.innerHTML=assigned.map(c=>{
+    const total=(c.price-c.down)*(1+0.05*c.months)+c.down;
+    const rem=total-c.paid;
+    return `<div class="client-card">
+      <div class="flex items-center gap-14">
+        <div class="client-avatar">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+        <div class="client-info">
+          <div class="client-name">${c.name}</div>
+          <div class="client-detail">${c.phone}</div>
+          <div class="client-detail">Balance: <strong class="text-pink">₱${rem.toFixed(2)}</strong></div>
+        </div>
+        <span class="status status-${c.status}">${c.status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function submitApplication(){
+  const name=document.getElementById('app-name').value;
+  const phone=document.getElementById('app-phone').value;
+  const service=document.getElementById('app-service').value;
+  if(!name||!phone){showToast('⚠️ Please fill in Name and Phone!');return;}
+  if(!service){showToast('⚠️ Please select a service type!');return;}
+  const id='EPC-'+Math.floor(Math.random()*9000+1000);
+  showToast('✅ Application submitted successfully!');
+  setTimeout(()=>showToast('🎉 Your Client ID: '+id),600);
+  setTimeout(()=>showToast('📧 Admin has been notified!'),1200);
+  setTimeout(()=>showToast('📲 Check your phone for confirmation!'),1800);
+}
+
+function recordPayment(){
+  showToast('✅ Payment recorded successfully!');
+  setTimeout(()=>showToast('🧾 Receipt generated!'),700);
+  setTimeout(()=>showToast('📲 Client has been notified!'),1400);
+}
+
+function sendOTP(){
+  const phone=document.getElementById('portal-phone').value;
+  if(!phone){showToast('⚠️ Enter your phone number first!');return;}
+  document.getElementById('otp-card').style.display='block';
+  showToast('📲 OTP sent to '+phone+' — Use 1234 for demo');
+}
+
+function otpNext(el,idx){
+  if(el.value.length===1){
+    const inputs=document.querySelectorAll('.otp-input input');
+    if(inputs[idx+1]) inputs[idx+1].focus();
+  }
+}
+
+function verifyOTP(){
+  document.getElementById('portal-login-view').style.display='none';
+  document.getElementById('portal-dashboard-view').style.display='block';
+  showToast('✅ Login successful! Welcome, Maria Santos!');
+}
+
+function portalLogout(){
+  document.getElementById('portal-login-view').style.display='block';
+  document.getElementById('portal-dashboard-view').style.display='none';
+  document.getElementById('otp-card').style.display='none';
+  document.getElementById('portal-phone').value='';
+}
+
+function renderDashChart(){
+  const months=['Jan','Feb','Mar','Apr','May','Jun'];
+  const vals=[28000,35000,42000,38000,45200,31000];
+  const max=Math.max(...vals);
+  const chart=document.getElementById('dashChart');
+  if(!chart) return;
+  chart.innerHTML=months.map((m,i)=>`
+    <div class="chart-bar-col">
+      <div class="chart-bar-val">₱${(vals[i]/1000).toFixed(0)}k</div>
+      <div class="chart-bar-inner" style="height:${Math.round((vals[i]/max)*100)}%"></div>
+      <div class="chart-bar-label">${m}</div>
+    </div>`).join('');
+}
+
+document.getElementById('clientModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('receiptModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+renderDashChart();
+renderClients('all','');
+renderPackages('all');
+</script>
+</body>
+</html>
